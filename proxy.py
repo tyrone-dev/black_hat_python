@@ -47,7 +47,7 @@ def main():
     parser.add_argument('localport')
     parser.add_argument('remotehost')
     parser.add_argument('remoteport')
-    parser.add_argument('-r', '--receive_first', action=store_true, default=True)
+    parser.add_argument('-r', '--receive_first', action='store_true', default=True)
 
     args = parser.parse_args()
 
