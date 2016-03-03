@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # python implementation of netcat
 
-# define some global variables
+
 import argparse
 import socket
 import subprocess
 import sys
 import threading
 
+# define some global variables
 listen = False
 command = False
 upload = False
@@ -15,50 +16,6 @@ execute = ""
 target = ""
 upload_destination = ""
 port = 0
-
-
-def client_sender(buffer):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    try:
-        # connect to our target host
-        client.connect((target, port))
-
-        # check if we got any input from stdin
-        # if yes, send data to tartget
-        if len(buffer):
-            client.send(buffer)
-
-            while True:
-
-                # wait for data back from client
-                recv_len = 1
-                response = ''
-
-                while recv_len:
-
-                    data = client.recv(4096)
-                    recv_len = len(data)
-                    response += data
-
-                    if recv_len < 4096:
-                        break
-
-                print response,
-
-                # wait for more inputs
-                buffer = raw_input('')
-                buffer += '\n'
-
-                # send it off
-                client.send(buffer)
-
-    except:
-
-        print '[*] Exception! Exiting'
-
-        # tear down the connection
-        client.close()
 
 
 def run_command(command):
@@ -78,7 +35,7 @@ def run_command(command):
 
 
 def client_handler(client_socket):
-    global upload_destination
+    global upload
     global execute
     global command
 
@@ -140,6 +97,7 @@ def client_handler(client_socket):
 
 def server_loop():
     global target
+    global port
 
     # if no target is defined, listen on all interfaces
     if not len(target):
@@ -160,6 +118,51 @@ def server_loop():
         # create a thread for each client that connects to server
         client_thread = threading.Thread(target=client_handler, args=(client_socket,))
         client_thread.start()
+
+
+def client_sender(buffer):
+
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        # connect to our target host
+        client.connect((target, port))
+
+        # check if we got any input from stdin
+        # if yes, send data to tartget
+        if len(buffer):
+            client.send(buffer)
+
+        while True:
+
+            # wait for data back from client
+            recv_len = 1
+            response = ''
+
+            while recv_len:
+
+                data = client.recv(4096)
+                recv_len = len(data)
+                response += data
+
+                if recv_len < 4096:
+                    break
+
+            print response,
+
+            # wait for more inputs
+            buffer = raw_input('')
+            buffer += '\n'
+
+            # send it off
+            client.send(buffer)
+
+    except:
+
+        print '[*] Exception! Exiting'
+
+        # tear down the connection
+        client.close()
 
 
 def main():
@@ -221,4 +224,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
